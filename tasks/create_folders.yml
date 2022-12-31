@@ -1,0 +1,37 @@
+---
+- name: Create private root folder
+  file:
+    path: "{{cloud_nas_private_folders_root}}"
+    state: directory
+    owner: root
+    group: users
+    mode: u=rwx,g=rx,o-rwx  
+
+- name: Create private folders for users
+  file:
+    path: "{{cloud_nas_private_folders_root}}/{{item.name}}"
+    state: directory
+    owner: "{{item.name}}"
+    group: root
+    mode: u=rwx,g-rwx,o-rwx
+    recurse: yes
+    follow: false
+  with_items:
+    - "{{cloud_nas_samba_users}}"
+  no_log: True
+
+- name: Create shared folders
+  file:
+    path: "{{item.path}}"
+    state: directory
+    group: "{{item.group}}"
+    mode: "{{item.mode}}"
+    recurse: yes
+  with_items:
+    - "{{cloud_nas_shared_folders}}"
+
+- name: Create sftp authorized keys directory
+  file:
+    path: /etc/proftpd/authorized_keys
+    state: directory
+    mode: u=rwx,g=rx,o=rx

@@ -1,0 +1,16 @@
+- name: Install packages for NAS features (Redhat)
+  ansible.builtin.yum:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  loop: "{{ cloud_nas_redhat_required_packages }}"
+  when: ansible_facts['os_family']|lower == 'redhat'
+  
+- name: Install packages for NAS features (Debian)
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  loop: "{{ cloud_nas_debian_required_packages }}"
+  when: ansible_facts['os_family']|lower == 'debian'

@@ -1,0 +1,25 @@
+---
+# vars file for cloud-nas
+cloud_nas_mountpoint: '/mnt/cloud'
+cloud_nas_devicename: 'cloudhd'
+cloud_nas_standby_timeout: 240 # (see "hdparm -S" for informations about spindown delay)
+cloud_nas_set_users_configurationfile: normal_users.json
+
+# WINDOWS SHARES PARAMETERS
+cloud_nas_samba_workgroup: 'WORKGROUP'
+cloud_nas_samba_hostname: 'sambahostname'
+cloud_nas_samba_users:
+  - {name: 'john', groups: 'users', smbpasswd: 'smbp@55w0rd1'}
+  - {name: 'larmstrong', groups: 'users', smbpasswd: 'smbp@55w0rd1'}
+#  - {name: 'userInMultipleGroups', groups: 'users, admins', smbpasswd: 'userInMultipleGroups'}
+#  - {name: 'userNotInGroups', groups: '', smbpasswd: 'userNotInGroups'}
+
+# FTP PARAMETERS
+cloud_nas_ftp_servername: 'Domain Ftp server'
+cloud_nas_ftp_serverport: 21
+
+# SFTP PARAMETERS
+cloud_nas_sftp_mod: 'on' # turning sftp on disables ftp support
+cloud_nas_sftp_port: 2222
+cloud_nas_sftp_authmethods: 'publickey' # Options: hostbased, keyboard-interactive, publickey, password. Multiple values can be provided as a space-delimited list, e.g.: 'publickey keyboard-interactive'
+cloud_nas_authorized_keys_dir: 'sftp_authorized_keys'

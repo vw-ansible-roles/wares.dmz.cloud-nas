@@ -1,0 +1,11 @@
+---
+# handlers file for cloud-nas
+- name: restart smbd
+  service:
+    name: smbd
+    state: restarted
+
+- name: restart proftpd
+  service:
+    name: proftpd
+    state: restarted

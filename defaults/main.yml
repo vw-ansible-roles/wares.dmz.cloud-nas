@@ -1,0 +1,25 @@
+---
+# defaults file for cloud-nas
+
+# PACKAGES
+cloud_nas_debian_required_packages:
+  - samba
+  - proftpd-basic
+  
+cloud_nas_redhat_required_packages:
+  - samba
+  - proftpd-basic
+
+# GENERAL
+cloud_nas_private_folders_root: "{{cloud_nas_mountpoint}}/private"
+cloud_nas_public_folder: "{{cloud_nas_mountpoint}}/public"
+cloud_nas_shared_folders:
+  - {name: 'incoming', path: '{{cloud_nas_mountpoint}}/incoming', group: 'users', mode: 'u=rwx,g=rwx,o=x,g+s'}
+  - {name: 'public', path: '{{ cloud_nas_public_folder}}', group: 'users', mode: 'u=rwx,g=rx,o=x'}
+
+# PROFTPD PARAMETERS
+cloud_nas_ftp_anonymous_user: 'ftp'
+cloud_nas_ftp_anonymous_group: 'ftp'
+cloud_nas_ftp_folders_root: "{{cloud_nas_mountpoint}}"
+cloud_nas_ftp_rootlogin: 'off'
+cloud_nas_sftp_engine: 'on'

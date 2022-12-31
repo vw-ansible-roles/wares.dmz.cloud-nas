@@ -1,0 +1,39 @@
+---
+#- name: Add the user
+#  user:
+#    comment: "{{ item.comment }}"
+#    group: "{{ item.group }}"
+#    groups: "{{ item.secondarygroups }}"
+#    create_home: "{{ item.create_home }}"
+#    home: "{{ item.home }}"
+#    name : "{{ item.name }}"
+#    password: "{{ item.password | password_hash('sha512') }}"
+#    update_password: "{{ item.update_password  }}"
+#    shell: "{{ item.shell }}"
+#    generate_ssh_key: "{{ item.generate_ssh_key }}"
+#    ssh_key_file: "{{ item.ssh_key_file }}"
+#    ssh_key_passphrase: "{{ item.ssh_key_passphrase }}"
+#    ssh_key_type: "{{ item.ssh_key_type }}"
+#    ssh_key_comment: "{{ item.name }}@{{ inventory_hostname }}"
+#    system: "{{ item.issystemaccount }}"
+#  no_log: True
+
+- name: Add normal user
+  user:
+    comment: "{{ (item.comment | length > 0) | ternary(item.comment, omit) }}"
+    group: "{{ (item.group | length > 0) | ternary(item.group, omit) }}"
+    groups: "{{ (item.secondarygroups | length > 0) | ternary(item.secondarygroups, omit) }}"
+    create_home: "{{ item.create_home }}"
+    home: "{{ (item.home | length > 0) | ternary(item.home, omit) }}"
+    name : "{{ item.name }}"
+    uid : "{{ (item.uid | length > 0) | ternary(item.uid, omit) }}"
+    password: "{{ item.password | password_hash('sha512') }}"
+    update_password: "{{ item.update_password  }}"
+    shell: "{{ (item.shell | length > 0) | ternary(item.shell, omit) }}"
+    generate_ssh_key: "{{ item.generate_ssh_key }}"
+    ssh_key_file: "{{ (item.ssh_key_file | length > 0) | ternary(item.ssh_key_file, omit) }}"
+    ssh_key_passphrase: "{{ (item.ssh_key_passphrase | length > 0) | ternary(ssh_key_passphrase.uid, omit) }}"
+    ssh_key_type: "{{ (item.ssh_key_type | length > 0) | ternary(item.ssh_key_type, omit) }}"
+    ssh_key_comment: "{{ item.name }}@{{ inventory_hostname }}"
+    system: "{{ item.issystemaccount }}"
+  no_log: True
