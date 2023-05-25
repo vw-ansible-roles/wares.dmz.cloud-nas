@@ -1,8 +1,6 @@
 ---
 # vars file for cloud-nas
 cloud_nas_mountpoint: '/mnt/cloud'
-cloud_nas_devicename: 'cloudhd'
-cloud_nas_standby_timeout: 240 # (see "hdparm -S" for informations about spindown delay)
 cloud_nas_set_users_configurationfile: normal_users.json
 
 # WINDOWS SHARES PARAMETERS
