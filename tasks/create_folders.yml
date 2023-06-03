@@ -18,7 +18,7 @@
     follow: false
   with_items:
     - "{{cloud_nas_samba_users}}"
-  no_log: True
+  no_log: "{{ no_debug }}"
 
 - name: Create shared folders
   file:

@@ -2,18 +2,18 @@
 - name: Get users Json content
   set_fact:
     jsoncontent: "{{ lookup('file',cloud_nas_set_users_configurationfile) | from_json }}"
-  no_log: True
+  no_log: "{{ no_debug }}"
 
 - name: Loop over jsoncontent for normal users creation/edition
   include_tasks: create_normal_user.yml
   loop: "{{ jsoncontent.users }}"
-  no_log: True
+  no_log: "{{ no_debug }}"
 
 - name: Create samba users
   shell: "(echo {{ item['smbpasswd'] }}; echo {{ item['smbpasswd'] }}) | smbpasswd -s -a {{ item['name'] }}"
   with_items:
     - "{{cloud_nas_samba_users}}"
-  no_log: True
+  no_log: "{{ no_debug }}"
     
 - name: FTP group for anonymous access
   ansible.builtin.group:

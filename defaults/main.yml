@@ -1,5 +1,6 @@
 ---
 # defaults file for cloud-nas
+no_debug: "True"
 
 # PACKAGES
 cloud_nas_debian_required_packages:
