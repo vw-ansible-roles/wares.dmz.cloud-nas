@@ -1,11 +1,31 @@
 ---
 # handlers file for cloud-nas
-- name: restart smbd
+- name: restart samba
   service:
-    name: smbd
+    name: "{{ item }}"
     state: restarted
+  with_items:
+    - smbd
+    - nmbd
+    - samba
 
 - name: restart proftpd
   service:
     name: proftpd
     state: restarted
+
+- name: init kodi service
+  ansible.builtin.systemd:
+    state: stopped
+    daemon_reload: yes
+    name: "{{ cloud_nas_kodi_svcname }}"
+
+- name: enable kodi service
+  ansible.builtin.service:
+    name: "{{ cloud_nas_kodi_svcname }}"
+    enabled: yes
+    
+- name: start kodi service
+  ansible.builtin.systemd:
+    state: started
+    name: "{{ cloud_nas_kodi_svcname }}"

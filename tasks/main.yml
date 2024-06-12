@@ -1,80 +1,13 @@
 ---
 # tasks file for cloud-nas
 
-- name: Install cloud-nas packages
-  import_tasks: install_pkgs.yml
+- name: Install packages for NAS features
+  ansible.builtin.include_tasks: common.yml
 
-- name: Disable Suspend and Hibernation (Debian)
-  ansible.builtin.systemd:
-    name: "{{ item }}"
-    #~ enabled: true
-    masked: yes
-  loop:
-    - sleep.target
-    - suspend.target
-    - hibernate.target
-    - hybrid-sleep.target
-  register: disable_suspend_hibern
-  when: ansible_facts['os_family']|lower == 'debian' or ansible_facts['os_family']|lower == 'osmc' or ansible_facts['os_family']|lower == 'libreelec'
+- name: Install packages for NAS features
+  ansible.builtin.include_tasks: mediacenter.yml
+  when: cloud_nas_mediacenter_enabled
 
-- name: Unconditionally reboot the machine with all defaults
-  ansible.builtin.reboot:
-  when: disable_suspend_hibern.changed
-
-- name: Start samba service, if not started
-  ansible.builtin.service:
-    name: smbd
-    state: started
-
-- name: Create normal users, Ftp and Samba users
-  import_tasks: create_users.yml
-
-- name: Create folders
-  import_tasks: create_folders.yml
-
-- name: Edit Samba configuration
-  template:
-    src: samba/cloud-nas_smb.conf
-    dest: /etc/samba/smb.conf
-    owner: root
-    group: root
-    mode: 0644
-  notify:
-    - restart smbd
-  
-- name: Copy sftp authorized public keys for users
-  copy: src={{item}} dest=/etc/proftpd/authorized_keys mode=0644
-  with_fileglob: "{{ cloud_nas_authorized_keys_dir }}/*"
-
-- name: Ensure proftpd is running
-  service: name=proftpd state=started
-
-- name: Edit ProFtpd Sftp module configuration
-  template:
-    src: proftpd/cloud-nas_sftp.conf
-    dest: /etc/proftpd/sftp.conf
-    owner: root
-    group: root
-    mode: 0644
-  notify:
-    - restart proftpd
-  
-- name: Edit ProFtpd modules configuration
-  template:
-    src: proftpd/cloud-nas_modules.conf
-    dest: /etc/proftpd/modules.conf
-    owner: root
-    group: root
-    mode: 0644
-  notify:
-    - restart proftpd
-
-- name: Edit ProFtpd main configuration
-  template:
-    src: proftpd/cloud-nas_proftpd.conf
-    dest: /etc/proftpd/proftpd.conf
-    owner: root
-    group: root
-    mode: 0644
-  notify:
-    - restart proftpd
+- name: Install packages for NAS features
+  ansible.builtin.include_tasks: fileserver.yml
+  when: cloud_nas_fileserver_enabled

@@ -1,23 +1,53 @@
 ---
 # vars file for cloud-nas
-cloud_nas_mountpoint: '/mnt/cloud'
-cloud_nas_set_users_configurationfile: normal_users.json
 
-# WINDOWS SHARES PARAMETERS
-cloud_nas_samba_workgroup: 'WORKGROUP'
-cloud_nas_samba_hostname: 'sambahostname'
-cloud_nas_samba_users:
-  - {name: 'john', groups: 'users', smbpasswd: 'smbp@55w0rd1'}
-  - {name: 'larmstrong', groups: 'users', smbpasswd: 'smbp@55w0rd1'}
-#  - {name: 'userInMultipleGroups', groups: 'users, admins', smbpasswd: 'userInMultipleGroups'}
-#  - {name: 'userNotInGroups', groups: '', smbpasswd: 'userNotInGroups'}
+# General
+cloud_nas_hd_type: "ext4"
+cloud_nas_network_drives_type: "cifs"
+cloud_nas_write_gid: 1500
+cloud_nas_required_packages:
+  - samba
+cloud_nas_fileserver_required_packages:
+  - proftpd-basic
 
-# FTP PARAMETERS
-cloud_nas_ftp_servername: 'Domain Ftp server'
-cloud_nas_ftp_serverport: 21
+# Transmission
+cloud_nas_transmission_enabled: '1'
+cloud_nas_transmission_bind_address_ipv4: '0.0.0.0' # default: '0.0.0.0'
+cloud_nas_transmission_bind_address_ipv6: '::' # default: '::'
+cloud_nas_transmission_download_dir: "{{ cloud_nas_mediacenter_mountpoint }}/Incoming" # default: '/var/lib/transmission-daemon/Downloads'
+cloud_nas_transmission_incomplete_dir: "{{ cloud_nas_mediacenter_mountpoint }}/Incoming" # default: '/var/lib/transmission-daemon/Downloads'
+cloud_nas_transmission_private_dir: "{{ cloud_nas_transmission_download_dir }}/private"
+cloud_nas_transmission_acls_enabled: 1
+cloud_nas_transmission_user: "{{ ansible_facts['os_family']|lower }}-transmission"
+cloud_nas_transmission_port_forwarding_enabled: 'true' # default: 'false'
+cloud_nas_transmission_prefetch_enabled: 'true' # default: 'true'
+cloud_nas_transmission_rpc_whitelist: '*.*.*.*' # default: '127.0.0.1'
+cloud_nas_transmission_speed_limit_down: '500' # default: '100'
+cloud_nas_transmission_speed_limit_down_enabled: 'false' # default: 'false'
+cloud_nas_transmission_speed_limit_up: '500' # default: '100'
+cloud_nas_transmission_speed_limit_up_enabled: 'true' # default: 'false'
+cloud_nas_transmission_upload_limit: '50' # default: '100'
+cloud_nas_transmission_upload_limit_enabled: '1' # default: '0'
+cloud_nas_transmission_umask: '2' # default : '18'
 
-# SFTP PARAMETERS
-cloud_nas_sftp_mod: 'on' # turning sftp on disables ftp support
-cloud_nas_sftp_port: 2222
-cloud_nas_sftp_authmethods: 'publickey' # Options: hostbased, keyboard-interactive, publickey, password. Multiple values can be provided as a space-delimited list, e.g.: 'publickey keyboard-interactive'
-cloud_nas_authorized_keys_dir: 'sftp_authorized_keys'
+# Kodi
+cloud_nas_kodi_enabled: '1'
+cloud_nas_kodi_svcaccount: "pi"
+cloud_nas_kodi_svcname: "kodi-standalone"
+cloud_nas_kodi_svcdescription: "Kodi standalone run"
+cloud_nas_kodi_svcstart: "/usr/local/bin/start-kodi-sa.sh"
+cloud_nas_kodi_cmdstart: "/usr/bin/kodi-standalone"
+
+# Fileserver
+cloud_nas_private_folders_root: "{{ cloud_nas_fileserver_mountpoint }}/private"
+cloud_nas_private_folders_name: "users"
+cloud_nas_public_folder: "{{ cloud_nas_fileserver_mountpoint }}/public"
+cloud_nas_shared_folders:
+  - {name: 'incoming', path: '{{ cloud_nas_fileserver_mountpoint }}/incoming', group: 'users', mode: 'u=rwx,g=rwx,o=x,g+s'}
+  - {name: 'public', path: '{{ cloud_nas_public_folder}}', group: 'users', mode: 'u=rwx,g=rx,o=x'}
+
+# PROFTPD PARAMETERS
+cloud_nas_ftp_anonymous_user: 'ftp'
+cloud_nas_ftp_anonymous_group: 'ftp'
+cloud_nas_ftp_folders_root: "{{ cloud_nas_fileserver_mountpoint }}"
+cloud_nas_ftp_rootlogin: 'off'

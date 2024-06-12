@@ -1,0 +1,12 @@
+[Unit]
+Description={{ cloud_nas_kodi_svcdescription }}
+After=network.target
+
+[Service]
+Type=simple
+User={{ cloud_nas_kodi_svcaccount }}
+ExecStart={{ cloud_nas_kodi_svcstart }}
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,88 @@
+# Install common required packages ###############
+
+- name: Install packages for NAS features
+  ansible.builtin.include_tasks: install_packages.yml
+  loop: "{{ cloud_nas_required_packages }}"
+  
+  
+# Disable hibernation (Debian only) ###############
+
+- name: Disable Suspend and Hibernation (Debian)
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    masked: yes
+  loop:
+    - sleep.target
+    - suspend.target
+    - hibernate.target
+    - hybrid-sleep.target
+  register: disable_suspend_hibern
+  when: ansible_facts['os_family']|lower == 'debian' or ansible_facts['os_family']|lower == 'osmc' or ansible_facts['os_family']|lower == 'libreelec'
+
+
+# Configure physical drives mounting ###############
+
+- name: Create mount point for physical drives if doesn't exist
+  ansible.builtin.file:
+    path: "{{ item.mountpoint }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0775'
+  loop: "{{ cloud_nas_physical_drives }}"
+     
+- name: Set /etc/fstab entry for physical drive
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    # Any line that begins with...
+    regexp: '^PARTUUID=.*{{ item.mountpoint | regex_escape() }}.*'
+    line: "PARTUUID={{ item.partuuid }} {{ item.mountpoint }} {{ item.type }} {{ item.extra_params }} 0 0"  
+  loop: "{{ cloud_nas_physical_drives }}"
+
+
+# Configure network drives mouting ###############
+
+- name: Create mount point for network drive if doesn't exist
+  ansible.builtin.file:
+    path: "{{ item.mountpoint }}"
+    state: directory
+    owner: "{{ item.uid }}"
+    group: "{{ item.gid }}"
+    mode: '0775'
+  loop: "{{ cloud_nas_network_drives }}"
+
+- name: Set /etc/fstab entry for network drives
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    # Any line that begins with...
+    regexp: '^.*{{ item.mountpoint | regex_escape() }}.*'
+    line: "{{ item.path }} {{ item.mountpoint }} {{ cloud_nas_network_drives_type }} forceuid,forcegid,uid={{ item.uid }},gid={{ item.gid }},username={{ item.username }},password={{ item.password }} 0 0"  
+  loop: "{{ cloud_nas_network_drives }}"
+
+
+# Restart target host ###############
+
+- name: Unconditionally reboot the machine with all defaults
+  ansible.builtin.reboot:
+  when: disable_suspend_hibern.changed
+
+
+# Edit Samba configuration and users ###############
+
+- name: Edit Samba configuration
+  ansible.builtin.template:
+    src: samba/cloud-nas_smb.conf
+    dest: /etc/samba/smb.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart samba
+
+- name: Create samba users
+  ansible.builtin.shell: "(echo {{ item['smbpasswd'] }}; echo {{ item['smbpasswd'] }}) | smbpasswd -s -a {{ item['name'] }}"
+  with_items:
+    - "{{cloud_nas_samba_users}}"
+  no_log: "{{ no_debug }}"
+  notify:
+    - restart samba

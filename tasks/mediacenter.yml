@@ -1,0 +1,236 @@
+# Create write users/group ###############
+
+- name: Ensure write group exists with correct gid
+  ansible.builtin.group:
+    name: "{{ cloud_nas_write_group }}"
+    state: present
+    gid: "{{ cloud_nas_write_gid }}"
+
+- name: Ensure write users exists with correct group
+  ansible.builtin.user:
+    name: "{{ item }}"
+    state: present
+    group: "{{ cloud_nas_write_group }}"
+  loop: "{{ cloud_nas_write_users }}"
+
+
+# Change owner/group/permissions for Mediacenter dirs ###############
+
+- name: Wait until hd is mounted before continuing
+  ansible.builtin.wait_for:
+    path: "{{ cloud_nas_mediacenter_mountpoint }}/Games/saves"
+    timeout: 60
+
+- name: Recursively change ownership for all dirs
+  ansible.builtin.file:
+    path: "{{ cloud_nas_mediacenter_mountpoint }}"
+    recurse: yes
+    owner: root
+    group: "{{ cloud_nas_write_group }}"
+    mode: '0775'
+
+- name: Recursively change ownership for emulators saves dir
+  ansible.builtin.file:
+    path: "{{ cloud_nas_mediacenter_mountpoint }}/Games/saves"
+    recurse: yes
+    owner: "{{ cloud_nas_emulators_user }}"
+    group: "{{ cloud_nas_write_group }}"
+
+- name: Recursively change ownership for emulators ps2 bios dir
+  ansible.builtin.file:
+    path: "{{ cloud_nas_mediacenter_mountpoint }}/Games/bios/ps2"
+    recurse: yes
+    owner: "{{ cloud_nas_emulators_user }}"
+    group: "{{ cloud_nas_write_group }}"
+
+- name: Find emulators systems directories
+  ansible.builtin.find:
+    paths: "{{ cloud_nas_mediacenter_mountpoint }}/Games/roms/"
+    recurse: no
+    file_type: directory
+  register: cloud_nas_emulators_systems_dirs
+
+- name: Create/change ownership for emulators media dirs
+  ansible.builtin.file:
+    path: "{{ item.path }}/media"
+    state: directory
+    recurse: no
+    owner: "{{ cloud_nas_emulators_user }}"
+    group: "{{ cloud_nas_write_group }}"
+  loop: "{{ cloud_nas_emulators_systems_dirs.files }}"
+
+- name: Recursively change ownership for emulators media dirs content
+  ansible.builtin.file:
+    path: "{{ item.path }}/media"
+    recurse: yes
+    owner: "{{ cloud_nas_emulators_user }}"
+    group: "{{ cloud_nas_write_group }}"
+  loop: "{{ cloud_nas_emulators_systems_dirs.files }}"
+
+- name: Recursively change ownership for emulators game lists
+  ansible.builtin.file:
+    path: "{{ item.path }}/gamelist.xml"
+    recurse: no
+    state: touch
+    owner: "{{ cloud_nas_emulators_user }}"
+    group: "{{ cloud_nas_write_group }}"
+  loop: "{{ cloud_nas_emulators_systems_dirs.files }}"
+
+
+# Install and Configure Transmission ###############
+
+- name: Install and configure Transmission
+  block:
+
+    - name: Install Transmission package
+      ansible.builtin.apt:
+        name: transmission-daemon
+        state: present
+        update_cache: yes
+        cache_valid_time: 3600
+     
+    - name: Stop Transmission Daemon before modifying settings
+      ansible.builtin.service:
+        name: transmission-daemon
+        state: stopped
+        
+    - name: Add Transmission user to write group
+      ansible.builtin.user: name="{{ cloud_nas_transmission_user }}"
+            groups="{{ cloud_nas_write_group }}"
+            append=yes
+        
+    - name: Edit Transmission configuration
+      ansible.builtin.template:
+        src: transmission/cloud-mediacenter_transmission-settings.json
+        dest: /etc/transmission-daemon/settings.json
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Create Transmission download/incomplete dirs if they don't exist
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ cloud_nas_transmission_user }}"
+        group: "{{ cloud_nas_write_group }}"
+        mode: 'u=rwxs,g=rwxs,o=rx'
+      loop:
+        - "{{ cloud_nas_transmission_download_dir }}"
+        - "{{ cloud_nas_transmission_incomplete_dir }}"
+
+    - name: Recursively change owner/permissions/setgid for Transmission download/incomplete dirs
+      ansible.builtin.file:
+        path: "{{ item }}"
+        recurse: yes
+        owner: "{{ cloud_nas_transmission_user }}"
+        group: "{{ cloud_nas_write_group }}"
+        mode: 'u=rwx,g=rwxs,o=rx'
+      loop:
+        - "{{ cloud_nas_transmission_download_dir }}"
+        - "{{ cloud_nas_transmission_incomplete_dir }}"
+
+    - name: Get informations about Transmission download dir
+      ansible.builtin.stat:
+        path: "{{ cloud_nas_transmission_download_dir }}"
+      register: cloud_nas_transmission_download_dir_infos
+
+    - name: Get informations about Transmission incomplete dir
+      ansible.builtin.stat:
+        path: "{{ cloud_nas_transmission_incomplete_dir }}"
+      register: cloud_nas_transmission_incomplete_dir_infos
+
+    - name: Set ACLs to disabled if download or incomplete dir is located on network drive
+      ansible.builtin.set_fact:
+        cloud_nas_transmission_acls_enabled: 0
+      when: not cloud_nas_transmission_download_dir_infos.stat.isblk or not cloud_nas_transmission_incomplete_dir_infos.stat.isblk
+
+    - name: Create Transmission private dirs
+      block:
+
+        - name: Install acl package
+          ansible.builtin.apt:
+            name: acl
+            state: present
+            update_cache: yes
+            cache_valid_time: 3600
+
+        - name: Set acl for Transmission download/incomplete dirs
+          ansible.builtin.shell:
+            cmd: "/usr/bin/setfacl -R -d -m g::rwx,o::rx {{ item }}"
+          loop:
+            - "{{ cloud_nas_transmission_download_dir }}"
+            - "{{ cloud_nas_transmission_incomplete_dir }}"
+
+        - name: Create Transmission private users dirs
+          ansible.builtin.file:
+            path: "{{ cloud_nas_transmission_private_dir }}/{{ item.name }}"
+            state: directory
+            owner: "{{ item.name }}"
+            group: "{{ cloud_nas_write_group }}"
+            mode: 'u=rwxs,g=rwxs,o-rwx'
+          loop: "{{ cloud_nas_samba_users }}"
+
+        - name: Change owner/permissions/setgid for Transmission private dirs
+          ansible.builtin.file:
+            path: "{{ cloud_nas_transmission_private_dir }}/{{ item.name }}"
+            recurse: no
+            owner: "{{ item.name }}"
+            group: "{{ cloud_nas_write_group }}"
+            mode: 'u=rwx,g=rwxs,o-rwx'
+          loop: "{{ cloud_nas_samba_users }}"
+
+        - name: Set acl for Transmission private dirs
+          ansible.builtin.shell:
+            cmd: "/usr/bin/setfacl -R -d -m g::rwx,o::rwx {{ cloud_nas_transmission_private_dir }}/{{ item.name }}"
+          loop: "{{ cloud_nas_samba_users }}"
+
+      when: cloud_nas_transmission_acls_enabled == 1
+    
+    - name: Start Transmission Daemon
+      ansible.builtin.service:
+        name: transmission-daemon
+        state: restarted
+
+  when: cloud_nas_transmission_enabled == '1'
+
+
+# Install and Configure Kodi ###############
+
+- name: Install and configure Kodi
+  block:
+
+    - name: Install kodi package
+      ansible.builtin.apt:
+        name: kodi
+        state: present
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Edit Kodi startup script
+      ansible.builtin.template:
+        src: kodi/cloud-mediacenter_start-kodi-sa.sh
+        dest: "{{ cloud_nas_kodi_svcstart }}"
+        owner: root
+        group: root
+        mode: 0755
+
+    - name: Edit Kodi startup service
+      ansible.builtin.template:
+        src: kodi/cloud-mediacenter_kodi.service
+        dest: "/etc/systemd/system/{{ cloud_nas_kodi_svcname }}.service"
+        owner: root
+        group: root
+        mode: 0644
+      notify:
+        - init kodi service
+        - enable kodi service
+        #- start kodi service
+
+    - name: Flush handlers
+      meta: flush_handlers
+
+    - name: Reboot host
+      ansible.builtin.reboot:
+        reboot_timeout: 300
+
+  when: cloud_nas_kodi_enabled == '1'
