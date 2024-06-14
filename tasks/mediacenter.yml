@@ -2,7 +2,7 @@
 
 - name: Ensure write group exists with correct gid
   ansible.builtin.group:
-    name: "{{ cloud_nas_write_group }}"
+    name: "{{ cloud_nas_mediacenter_write_group }}"
     state: present
     gid: "{{ cloud_nas_write_gid }}"
 
@@ -10,7 +10,7 @@
   ansible.builtin.user:
     name: "{{ item }}"
     state: present
-    group: "{{ cloud_nas_write_group }}"
+    group: "{{ cloud_nas_mediacenter_write_group }}"
   loop: "{{ cloud_nas_write_users }}"
 
 
@@ -26,7 +26,7 @@
     path: "{{ cloud_nas_mediacenter_mountpoint }}"
     recurse: yes
     owner: root
-    group: "{{ cloud_nas_write_group }}"
+    group: "{{ cloud_nas_mediacenter_write_group }}"
     mode: '0775'
 
 - name: Recursively change ownership for emulators saves dir
@@ -34,14 +34,14 @@
     path: "{{ cloud_nas_mediacenter_mountpoint }}/Games/saves"
     recurse: yes
     owner: "{{ cloud_nas_emulators_user }}"
-    group: "{{ cloud_nas_write_group }}"
+    group: "{{ cloud_nas_mediacenter_write_group }}"
 
 - name: Recursively change ownership for emulators ps2 bios dir
   ansible.builtin.file:
     path: "{{ cloud_nas_mediacenter_mountpoint }}/Games/bios/ps2"
     recurse: yes
     owner: "{{ cloud_nas_emulators_user }}"
-    group: "{{ cloud_nas_write_group }}"
+    group: "{{ cloud_nas_mediacenter_write_group }}"
 
 - name: Find emulators systems directories
   ansible.builtin.find:
@@ -56,7 +56,7 @@
     state: directory
     recurse: no
     owner: "{{ cloud_nas_emulators_user }}"
-    group: "{{ cloud_nas_write_group }}"
+    group: "{{ cloud_nas_mediacenter_write_group }}"
   loop: "{{ cloud_nas_emulators_systems_dirs.files }}"
 
 - name: Recursively change ownership for emulators media dirs content
@@ -64,7 +64,7 @@
     path: "{{ item.path }}/media"
     recurse: yes
     owner: "{{ cloud_nas_emulators_user }}"
-    group: "{{ cloud_nas_write_group }}"
+    group: "{{ cloud_nas_mediacenter_write_group }}"
   loop: "{{ cloud_nas_emulators_systems_dirs.files }}"
 
 - name: Recursively change ownership for emulators game lists
@@ -73,7 +73,7 @@
     recurse: no
     state: touch
     owner: "{{ cloud_nas_emulators_user }}"
-    group: "{{ cloud_nas_write_group }}"
+    group: "{{ cloud_nas_mediacenter_write_group }}"
   loop: "{{ cloud_nas_emulators_systems_dirs.files }}"
 
 
@@ -96,7 +96,7 @@
         
     - name: Add Transmission user to write group
       ansible.builtin.user: name="{{ cloud_nas_transmission_user }}"
-            groups="{{ cloud_nas_write_group }}"
+            groups="{{ cloud_nas_mediacenter_write_group }}"
             append=yes
         
     - name: Edit Transmission configuration
@@ -112,7 +112,7 @@
         path: "{{ item }}"
         state: directory
         owner: "{{ cloud_nas_transmission_user }}"
-        group: "{{ cloud_nas_write_group }}"
+        group: "{{ cloud_nas_mediacenter_write_group }}"
         mode: 'u=rwxs,g=rwxs,o=rx'
       loop:
         - "{{ cloud_nas_transmission_download_dir }}"
@@ -123,7 +123,7 @@
         path: "{{ item }}"
         recurse: yes
         owner: "{{ cloud_nas_transmission_user }}"
-        group: "{{ cloud_nas_write_group }}"
+        group: "{{ cloud_nas_mediacenter_write_group }}"
         mode: 'u=rwx,g=rwxs,o=rx'
       loop:
         - "{{ cloud_nas_transmission_download_dir }}"
@@ -166,7 +166,7 @@
             path: "{{ cloud_nas_transmission_private_dir }}/{{ item.name }}"
             state: directory
             owner: "{{ item.name }}"
-            group: "{{ cloud_nas_write_group }}"
+            group: "{{ cloud_nas_mediacenter_write_group }}"
             mode: 'u=rwxs,g=rwxs,o-rwx'
           loop: "{{ cloud_nas_samba_users }}"
 
@@ -175,7 +175,7 @@
             path: "{{ cloud_nas_transmission_private_dir }}/{{ item.name }}"
             recurse: no
             owner: "{{ item.name }}"
-            group: "{{ cloud_nas_write_group }}"
+            group: "{{ cloud_nas_mediacenter_write_group }}"
             mode: 'u=rwx,g=rwxs,o-rwx'
           loop: "{{ cloud_nas_samba_users }}"
 

@@ -39,12 +39,11 @@ cloud_nas_kodi_svcstart: "/usr/local/bin/start-kodi-sa.sh"
 cloud_nas_kodi_cmdstart: "/usr/bin/kodi-standalone"
 
 # Fileserver
-cloud_nas_private_folders_root: "{{ cloud_nas_fileserver_mountpoint }}/private"
-cloud_nas_private_folders_name: "users"
+cloud_nas_private_folders: {name: 'users', root: '{{ cloud_nas_fileserver_mountpoint }}/private', validusers: '@users', writelist: '@users'}
 cloud_nas_public_folder: "{{ cloud_nas_fileserver_mountpoint }}/public"
 cloud_nas_shared_folders:
-  - {name: 'incoming', path: '{{ cloud_nas_fileserver_mountpoint }}/incoming', group: 'users', mode: 'u=rwx,g=rwx,o=x,g+s'}
-  - {name: 'public', path: '{{ cloud_nas_public_folder}}', group: 'users', mode: 'u=rwx,g=rx,o=x'}
+  - {name: 'incoming', path: '{{ cloud_nas_fileserver_mountpoint }}/incoming', public: 0, validusers: '@users', writelist: '@users', mode: 'u=rwx,g=rwx,o=x,g+s'}
+  - {name: 'public', path: '{{ cloud_nas_public_folder}}', public: 1, validusers: '@users', writelist: '@users', mode: 'u=rwx,g=rx,o=x'}
 
 # PROFTPD PARAMETERS
 cloud_nas_ftp_anonymous_user: 'ftp'

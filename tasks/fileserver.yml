@@ -4,7 +4,7 @@
 
 - name: Create private root folder
   file:
-    path: "{{cloud_nas_private_folders_root}}"
+    path: "{{cloud_nas_private_folders.root}}"
     state: directory
     owner: root
     group: users
@@ -12,7 +12,7 @@
 
 - name: Create private folders for users
   file:
-    path: "{{cloud_nas_private_folders_root}}/{{item.name}}"
+    path: "{{cloud_nas_private_folders.root}}/{{item.name}}"
     state: directory
     owner: "{{item.name}}"
     group: root

@@ -6,8 +6,8 @@ no_debug: "True"
 
 # Physical drives
 cloud_nas_physical_drives:
-  - {partuuid: '46azd48z-dz45-456a-daf4a88644zz25', type: 'ext4', mountpoint: '/mnt/fileserver_rootdir', extra_params: 'defaults', shared: 1, name: 'Fileserver'}
-  - {partuuid: 'd4az644d-d445-489g-zezd784d78z4f8', type: 'ntfs', mountpoint: '/mnt/backup', extra_params: 'defaults,uid=1000,gid=1000', shared: 0, name: 'Backup'}
+  - {partuuid: '46azd48z-dz45-456a-daf4a88644zz25', type: 'ext4', mountpoint: '/mnt/fileserver_rootdir', extra_params: 'defaults', shared: 1, public: 1, validusers: '', writelist: '@users', name: 'Fileserver'}
+  - {partuuid: 'd4az644d-d445-489g-zezd784d78z4f8', type: 'ntfs', mountpoint: '/mnt/backup', extra_params: 'defaults,uid=1000,gid=1000', shared: 0, public: 0, validusers: '@users', writelist: 'admin, john', name: 'Backup'}
 
 # Samba
 cloud_nas_samba_workgroup: 'WORKGROUP'
@@ -31,7 +31,7 @@ cloud_nas_write_users:
   - john
   - admin
   - emulators
-cloud_nas_write_group: "hdadmins"
+cloud_nas_mediacenter_write_group: "hdadmins"
 cloud_nas_transmission_rpc_username: 'sam'
 cloud_nas_transmission_rpc_password: 's4mP@55w0rd'
 cloud_nas_transmission_private_dirs_enabled: 1 # private dirs feature requires acl and is not compatible with network drives
