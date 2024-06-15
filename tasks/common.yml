@@ -60,6 +60,10 @@
   loop: "{{ cloud_nas_network_drives }}"
 
 
+- name: Mount all filesystems from /etc/fstab
+  ansible.builtin.command:
+    cmd: mount -a
+
 # Edit Samba configuration and users ###############
 
 - name: Edit Samba configuration
