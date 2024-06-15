@@ -27,8 +27,8 @@
   file:
     path: "{{item.path}}"
     state: directory
-    group: "{{item.group}}"
     mode: "{{item.mode}}"
+    group: "{{ cloud_nas_shared_folders_group }}"
     recurse: yes
   with_items:
     - "{{cloud_nas_shared_folders}}"
