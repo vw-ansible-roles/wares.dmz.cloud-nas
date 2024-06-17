@@ -27,7 +27,7 @@ cloud_nas_network_drives:
 cloud_nas_mediacenter_enabled: true # false will totally disable mediacenter features
 cloud_nas_mediacenter_mountpoint: '/mnt/fileserver_rootdir'
 cloud_nas_emulators_user: "emulators"
-cloud_nas_write_users:
+cloud_nas_mediacenter_write_users:
   - john
   - admin
   - emulators

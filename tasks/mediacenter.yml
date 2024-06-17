@@ -6,12 +6,19 @@
     state: present
     gid: "{{ cloud_nas_write_gid }}"
 
-- name: Ensure write users exists with correct group
+- name: Ensure write users exist
   ansible.builtin.user:
     name: "{{ item }}"
     state: present
-    group: "{{ cloud_nas_mediacenter_write_group }}"
-  loop: "{{ cloud_nas_write_users }}"
+  loop: "{{ cloud_nas_mediacenter_write_users }}"
+
+- name: Append write users in write group
+  ansible.builtin.user:
+    name: "{{ item }}"
+    state: present
+    groups: "{{ cloud_nas_mediacenter_write_group }},"
+    append: yes
+  loop: "{{ cloud_nas_mediacenter_write_users }}"
 
 
 # Change owner/group/permissions for Mediacenter dirs ###############
