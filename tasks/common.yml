@@ -38,7 +38,9 @@
     regexp: '^PARTUUID=.*{{ item.mountpoint | regex_escape() }}.*'
     line: "PARTUUID={{ item.partuuid }} {{ item.mountpoint }} {{ item.type }} {{ item.extra_params }} 0 0"  
   loop: "{{ cloud_nas_physical_drives }}"
-
+  notify:
+    - daemon reload
+    - restart samba
 
 # Configure network drives mouting ###############
 
@@ -58,7 +60,9 @@
     regexp: '^.*{{ item.mountpoint | regex_escape() }}.*'
     line: "{{ item.path }} {{ item.mountpoint }} {{ cloud_nas_network_drives_type }} forceuid,forcegid,uid={{ item.uid }},gid={{ item.gid }},username={{ item.username }},password={{ item.password }} 0 0"  
   loop: "{{ cloud_nas_network_drives }}"
-
+  notify:
+    - daemon reload
+    - restart samba
 
 - name: Mount all filesystems from /etc/fstab
   ansible.builtin.command:

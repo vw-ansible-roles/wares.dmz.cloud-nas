@@ -229,8 +229,4 @@
     - name: Flush handlers
       meta: flush_handlers
 
-    - name: Reboot host
-      ansible.builtin.reboot:
-        reboot_timeout: 300
-
   when: cloud_nas_kodi_enabled == '1'

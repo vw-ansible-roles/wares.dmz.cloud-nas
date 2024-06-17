@@ -29,3 +29,7 @@
   ansible.builtin.systemd:
     state: started
     name: "{{ cloud_nas_kodi_svcname }}"
+
+- name: daemon reload
+  ansible.builtin.command:
+    cmd: /usr/bin/systemctl daemon-reload
