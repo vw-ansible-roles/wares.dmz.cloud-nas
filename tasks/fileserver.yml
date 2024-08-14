@@ -16,7 +16,7 @@
     state: directory
     owner: root
     group: "{{cloud_nas_root_folders_group}}"
-    mode: u=rwx,g=rx,o-rwx
+    mode: "{{cloud_nas_root_folders_mode}}"
 
 - name: Create private folders for users
   file:

@@ -45,6 +45,7 @@ cloud_nas_shared_folders:
   - {name: 'incoming', path: '{{ cloud_nas_fileserver_mountpoint }}/incoming', public: 0, validusers: '@users', writelist: '@users', mode: 'u=rwx,g=rwx,o=x,g+s'}
   - {name: 'public', path: '{{ cloud_nas_public_folder}}', public: 1, validusers: '@users', writelist: '@users', mode: 'u=rwx,g=rx,o=x'}
 cloud_nas_root_folders_group: "users"
+cloud_nas_root_folders_mode: "u=rwx,g=rx,o=x"
 cloud_nas_shared_folders_group: "users"
 
 # PROFTPD PARAMETERS
