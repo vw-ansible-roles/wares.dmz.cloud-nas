@@ -8,7 +8,7 @@
     state: directory
     owner: root
     group: users
-    mode: u=rwx,g=rx,o-rwx
+    mode: "{{ cloud_nas_ftp_folders_root_permissions }}"
 
 - name: Create private root folder
   file:

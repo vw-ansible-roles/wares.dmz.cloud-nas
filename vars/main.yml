@@ -52,4 +52,5 @@ cloud_nas_shared_folders_group: "users"
 cloud_nas_ftp_anonymous_user: 'ftp'
 cloud_nas_ftp_anonymous_group: 'ftp'
 cloud_nas_ftp_folders_root: "{{ cloud_nas_fileserver_mountpoint }}"
+cloud_nas_ftp_folders_root_permissions: "u=rwx,g=rx,o-rwx"
 cloud_nas_ftp_rootlogin: 'off'
