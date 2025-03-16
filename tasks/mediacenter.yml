@@ -36,6 +36,10 @@
     group: "{{ cloud_nas_mediacenter_write_group }}"
     mode: '0775'
 
+- name: Recursively change setgid for all dirs
+  ansible.builtin.shell: |
+    find "{{ cloud_nas_mediacenter_mountpoint }}" -type d -exec chmod g+s {} +
+
 - name: Recursively change ownership for emulators saves dir
   ansible.builtin.file:
     path: "{{ cloud_nas_mediacenter_mountpoint }}/Games/saves"
@@ -64,6 +68,7 @@
     recurse: no
     owner: "{{ cloud_nas_recalbox_user }}"
     group: "{{ cloud_nas_mediacenter_write_group }}"
+    mode: 'u=rwx,g=rwxs,o=rx'
   loop: "{{ cloud_nas_emulators_systems_dirs.files }}"
 
 - name: Recursively change ownership for emulators media dirs content (Recalbox)
@@ -90,6 +95,7 @@
     recurse: no
     owner: "{{ cloud_nas_retrobat_user }}"
     group: "{{ cloud_nas_mediacenter_write_group }}"
+    mode: 'u=rwx,g=rwxs,o=rx'
   loop: "{{ cloud_nas_emulators_systems_dirs.files }}"
 
 - name: Recursively change ownership for emulators images dirs content (Retrobat)
@@ -107,6 +113,7 @@
     recurse: no
     owner: "{{ cloud_nas_retrobat_user }}"
     group: "{{ cloud_nas_mediacenter_write_group }}"
+    mode: 'u=rwx,g=rwxs,o=rx'
   loop: "{{ cloud_nas_emulators_systems_dirs.files }}"
 
 - name: Recursively change ownership for emulators videos dirs content (Retrobat)
