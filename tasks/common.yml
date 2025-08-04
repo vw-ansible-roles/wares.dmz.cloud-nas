@@ -58,7 +58,7 @@
     path: /etc/fstab
     # Any line that begins with...
     regexp: '^.*{{ item.mountpoint | regex_escape() }}.*'
-    line: "{{ item.path }} {{ item.mountpoint }} {{ cloud_nas_network_drives_type }} forceuid,forcegid,uid={{ item.uid }},gid={{ item.gid }},username={{ item.username }},password={{ item.password }} 0 0"  
+    line: "{{ item.path }} {{ item.mountpoint }} {{ cloud_nas_network_drives_type }} forceuid,forcegid,uid={{ item.uid }},gid={{ item.gid }},username={{ item.username }},password={{ item.password }},x-systemd.automount,_netdev,noauto 0 0"  
   loop: "{{ cloud_nas_network_drives }}"
   notify:
     - daemon reload
