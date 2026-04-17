@@ -9,7 +9,8 @@ cloud_nas_required_packages:
   - samba
   - cifs-utils
 cloud_nas_fileserver_required_packages:
-  - proftpd-basic
+  - proftpd
+  - proftpd-mod-crypto
 
 # Transmission
 cloud_nas_transmission_enabled: '1'
